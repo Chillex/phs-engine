@@ -130,6 +130,7 @@
     <ClCompile Include="FanForce.cpp" />
     <ClCompile Include="FPSCounter.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Math.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleForceGenerator.cpp" />
     <ClCompile Include="ParticleForceRegistry.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="FanForce.h" />
     <ClInclude Include="FPSCounter.h" />
+    <ClInclude Include="Math.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleForceGenerator.h" />
     <ClInclude Include="ParticleForceRegistry.h" />

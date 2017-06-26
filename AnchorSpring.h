@@ -7,7 +7,7 @@ class Particle;
 class AnchorSpring
 {
 public:
-	AnchorSpring(glm::vec2 anchorPoint, Particle* particle, float springConst, float restLength);
+	AnchorSpring(glm::vec2 anchorPoint, Particle* particle, float springConst, float restLength, float damping);
 	~AnchorSpring();
 
 	void UpdateForce(float deltaTime);
@@ -18,5 +18,6 @@ public:
 protected:
 	float m_springConst;
 	float m_restLength;
+	float m_damping;
 };
 

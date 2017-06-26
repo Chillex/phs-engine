@@ -20,6 +20,8 @@ public:
 	void Update(float duration);
 	void Render(sf::RenderWindow& window);
 
+	void Reset(void);
+
 	std::vector<Particle*> GetParticles(void) const;
 
 	void CreateParticles(int amount);

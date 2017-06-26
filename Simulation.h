@@ -33,8 +33,10 @@ public:
 
 	void ToggleFan(void);
 	void ToggleDebugDraw(void);
+	void ToggleBlizzards(void);
 
 	void SpawnBalls(int amount);
+	void ResetBalls(void);
 
 protected:
 	struct CollisionType
@@ -48,6 +50,9 @@ protected:
 	};
 
 	void InitScene(void);
+
+	void SpawnCloth(glm::vec2 position, glm::vec2 distance, glm::ivec2 amount);
+
 	void ResolveCollisions(void);
 	void ResolveSingleCollision(Particle* particle, StaticObject staticObject);
 	void ResolveSingleCollision(Particle* particle1, Particle* particle2, CollisionType::Enum collisionType);
@@ -64,7 +69,7 @@ protected:
 	std::vector<Particle*> m_particles;
 
 	bool m_fanActive;
-
+	bool m_blizzardsActive;
 	bool m_debugDraw;
 };
 

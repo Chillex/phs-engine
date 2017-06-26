@@ -14,6 +14,7 @@
 #include "ParticleForceRegistry.h"
 #include "AnchorSpring.h"
 #include "SpringJoint.h"
+#include "Math.h"
 
 ParticleGravity* Simulation::ParticleGravityGenerator = new ParticleGravity(CONSTANT::GRAVITY);
 FanForce* Simulation::FanForceGenerator = new FanForce(glm::vec2(-200.0f, 0.0f), glm::vec2(150.0f, 850.0f));
@@ -23,6 +24,7 @@ Simulation::Simulation()
 	: m_forceRegistry(new ParticleForceRegistry())
 	, m_ballSpawner(glm::vec2(1920.0f * 0.5f, 0.0f), 450.0f, m_forceRegistry)
 	, m_fanActive(false)
+	, m_blizzardsActive(true)
 {
 	InitScene();
 }
@@ -30,6 +32,11 @@ Simulation::Simulation()
 Simulation::~Simulation()
 {
 	delete m_forceRegistry;
+
+	for (size_t i = 0; i < m_particles.size(); ++i)
+	{
+		delete m_particles[i];
+	}
 }
 
 void Simulation::Update(float deltaTime)
@@ -56,7 +63,7 @@ void Simulation::Update(float deltaTime)
 			}
 		}
 
-		(*it).Update(deltaTime);
+		(*it).Update(deltaTime, m_blizzardsActive);
 	}
 
 	// update balls
@@ -184,17 +191,17 @@ void Simulation::Render(sf::RenderWindow& window)
 
 	// render cloth
 	sf::CircleShape clothShape;
-	clothShape.setFillColor(sf::Color::Cyan);
-	for (std::vector<Particle*>::iterator it = m_particles.begin(); it != m_particles.end(); ++it)
-	{
-		Particle* p = (*it);
+	//clothShape.setFillColor(sf::Color::Cyan);
+	//for (std::vector<Particle*>::iterator it = m_particles.begin(); it != m_particles.end(); ++it)
+	//{
+	//	Particle* p = (*it);
 
-		clothShape.setPosition(p->position.x, p->position.y);
-		clothShape.setRadius(p->circleBound.radius);
-		clothShape.setOrigin(p->circleBound.radius, p->circleBound.radius);
+	//	clothShape.setPosition(p->position.x, p->position.y);
+	//	clothShape.setRadius(p->circleBound.radius);
+	//	clothShape.setOrigin(p->circleBound.radius, p->circleBound.radius);
 
-		window.draw(clothShape);
-	}
+	//	window.draw(clothShape);
+	//}
 
 	sf::VertexArray line(sf::LineStrip, 2);
 	for (std::vector<AnchorSpring>::iterator it = m_anchorSprings.begin(); it != m_anchorSprings.end(); ++it)
@@ -225,6 +232,16 @@ void Simulation::ToggleDebugDraw()
 	m_debugDraw = !m_debugDraw;
 }
 
+void Simulation::ToggleBlizzards()
+{
+	m_blizzardsActive = !m_blizzardsActive;
+}
+
+void Simulation::ResetBalls()
+{
+	m_ballSpawner.Reset();
+}
+
 void Simulation::SpawnBalls(int amount)
 {
 	m_ballSpawner.CreateParticles(amount);
@@ -232,15 +249,15 @@ void Simulation::SpawnBalls(int amount)
 
 void Simulation::InitScene()
 {
-	Blizzard b1(glm::vec2(300.0f, 100.0f), 0.05f, Blizzard::Direction::COUNTERCLOCKWISE, m_forceRegistry);
-	Blizzard b2(glm::vec2(1520.0f, 200.0f), 0.05f, Blizzard::Direction::CLOCKWISE, m_forceRegistry);
+	Blizzard b1(glm::vec2(500.0f, 100.0f), 0.01f, Blizzard::Direction::COUNTERCLOCKWISE, m_forceRegistry);
+	Blizzard b2(glm::vec2(1520.0f, 200.0f), 0.01f, Blizzard::Direction::CLOCKWISE, m_forceRegistry);
 
-	//m_blizzards.push_back(b1);
-	//m_blizzards.push_back(b2);
+	m_blizzards.push_back(b1);
+	m_blizzards.push_back(b2);
 
 	StaticObject floor(glm::vec2(1920.0f * 0.5f, 1080.0f - 25.0f), glm::vec2(1920.0f, 50.0f), 0.0f);
-	StaticObject roof1(glm::vec2(1200.0f, 400.0f), glm::vec2(500.0f, 20.0f), 10.0f);
-	StaticObject roof2(glm::vec2(710.0f, 379.0f), glm::vec2(500.0f, 20.0f), -5.0f);
+	StaticObject roof1(glm::vec2(1300.0f, 400.0f), glm::vec2(500.0f, 20.0f), 10.0f);
+	StaticObject roof2(glm::vec2(810.0f, 379.0f), glm::vec2(500.0f, 20.0f), -5.0f);
 	StaticObject leftWall(glm::vec2(10.0f, 1080.0f * 0.5f), glm::vec2(20.0f, 1080.0f), 0.0f);
 	StaticObject rightWall(glm::vec2(1920.0f - 10.0f, 1080.0f * 0.5f), glm::vec2(20.0f, 1080.0f), 0.0f);
 
@@ -250,48 +267,59 @@ void Simulation::InitScene()
 	m_staticObjects.push_back(leftWall);
 	m_staticObjects.push_back(rightWall);
 
+	SpawnCloth(glm::vec2(100.0f, 100.0f), glm::vec2(35.0f, 35.0f), glm::ivec2(10, 10));
+}
+
+void Simulation::SpawnCloth(glm::vec2 position, glm::vec2 distance, glm::ivec2 amount)
+{
 	// cloth
 	glm::vec2 vel(0.0f);
 	glm::vec2 acc(0.0f);
 	float dampening = 0.9f;
-	float mass = 1.0f;
+	float mass = 0.5f;
 	float lifetime = Particle::INFINITE_LIFETIME;
-	float size = 15.0f;
+	float size = 1.0f;
 	float bounciness = 1.0f;
-	Particle* c1 = new Particle(glm::vec2(110.0f, 80.f), vel, acc, dampening, mass, lifetime, size, bounciness);
-	Particle* c2 = new Particle(glm::vec2(130.0f, 80.f), vel, acc, dampening, mass, lifetime, size, bounciness);
-	Particle* c3 = new Particle(glm::vec2(190.0f, 80.f), vel, acc, dampening, mass, lifetime, size, bounciness);
-	Particle* c4 = new Particle(glm::vec2(210.0f, 80.f), vel, acc, dampening, mass, lifetime, size, bounciness);
 
-	m_forceRegistry->Add(c1, ParticleGravityGenerator);
-	m_forceRegistry->Add(c2, ParticleGravityGenerator);
-	m_forceRegistry->Add(c3, ParticleGravityGenerator);
-	m_forceRegistry->Add(c4, ParticleGravityGenerator);
+	float springConstantX = 5.0f;
+	float springConstantY = 200.0f;
+	float restLengthX = distance.x;
+	float restLengthY = distance.y;
+	float dampingX = 1.0f;
+	float dampingY = 20.0f;
 
-	m_particles.push_back(c1);
-	m_particles.push_back(c2);
-	m_particles.push_back(c3);
-	m_particles.push_back(c4);
+	for (int y = 0; y < amount.y; y++)
+	{
+		for (int x = 0; x < amount.x; x++)
+		{
+			float posX = position.x + x * distance.x;
+			float posY = position.y + y * distance.y;
+			Particle* p = new Particle(glm::vec2(posX, posY), vel, acc, dampening, mass, lifetime, size, bounciness);
+			m_forceRegistry->Add(p, ParticleGravityGenerator);
+			m_particles.push_back(p);
 
-	float springConstant = 10.0f;
-	float restLength = 20.0f;
-	AnchorSpring anch1(glm::vec2(200.0f, 150.0f), c1, springConstant, restLength);
-	AnchorSpring anch2(glm::vec2(240.0f, 150.0f), c2, springConstant, restLength);
-	AnchorSpring anch3(glm::vec2(280.0f, 150.0f), c3, springConstant, restLength);
-	AnchorSpring anch4(glm::vec2(320.0f, 150.0f), c4, springConstant, restLength);
+			// not the first
+			if (x != 0)
+			{
+				// connect to left
+				SpringJoint spring(p, m_particles[m_particles.size() - 2], springConstantX, restLengthX, dampingX);
+				m_springJoints.push_back(spring);
+			}
 
-	m_anchorSprings.push_back(anch1);
-	m_anchorSprings.push_back(anch2);
-	m_anchorSprings.push_back(anch3);
-	m_anchorSprings.push_back(anch4);
-
-	SpringJoint spring1(c1, c2, springConstant, restLength);
-	SpringJoint spring2(c2, c3, springConstant, restLength);
-	SpringJoint spring3(c3, c4, springConstant, restLength);
-
-	m_springJoints.push_back(spring1);
-	m_springJoints.push_back(spring2);
-	m_springJoints.push_back(spring3);
+			if (y == 0)
+			{
+				// first row
+				AnchorSpring anchor(glm::vec2(posX, posY - distance.y), p, springConstantY, restLengthY, dampingY);
+				m_anchorSprings.push_back(anchor);
+			}
+			else
+			{
+				// connect to above
+				SpringJoint spring(p, m_particles[m_particles.size() - 1 - amount.x], springConstantY, restLengthY, dampingY);
+				m_springJoints.push_back(spring);
+			}
+		}
+	}
 }
 
 void Simulation::ResolveCollisions()
@@ -388,7 +416,7 @@ void Simulation::ResolveSingleCollision(Particle* particle, StaticObject staticO
 	// reset position
 	particle->position -= normal * collisionInfo.depth;
 
-	//float normalStrength = glm::dot(normal, -particle->velocity);
+	//float normalStrength = glm::dot(normal, particle->velocity);
 	//particle->velocity -= normal * (normalStrength * particle->bounciness) * 2.0f;
 
 	// calculate new velocity
@@ -403,7 +431,7 @@ void Simulation::ResolveSingleCollision(Particle* particle, StaticObject staticO
 	// check if force is strong enough to break static friction
 	// https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-friction-scene-and-jump-table--gamedev-7756
 	glm::vec2 normalVelocity = glm::proj(particle->velocity, -normal);
-	if (glm::length(normalVelocity) > 20.0f)
+	if (Math::SaveLength(normalVelocity) > 20.0f)
 	{
 		// no friction
 		return;
@@ -433,14 +461,12 @@ void Simulation::ResolveSingleCollision(Particle* particle, StaticObject staticO
 	{
 		// static friction
 		frictionImpulse = jt * tangent;
-		printf("=> static!\n");
 	}
 	else
 	{
 		// dynamic friction
 		float dynamicFriction = 0.1f;
 		frictionImpulse = -j * tangent * dynamicFriction;
-		printf("=> dynamic!\n");
 	}
 
 	particle->velocity -= particle->inverseMass * frictionImpulse;

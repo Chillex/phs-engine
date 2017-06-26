@@ -28,7 +28,7 @@ public:
 	Blizzard(glm::vec2 center, float rate, Direction::Enum direction, ParticleForceRegistry* forceRegistry);
 	~Blizzard();
 
-	void Update(float duration);
+	void Update(float duration, bool spawnNew);
 	void Render(sf::RenderWindow& window);
 
 	std::vector<Particle*> GetParticles(void) const;

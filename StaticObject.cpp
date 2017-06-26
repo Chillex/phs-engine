@@ -1,4 +1,5 @@
 #include "StaticObject.h"
+#include "Math.h"
 
 StaticObject::StaticObject()
 	: StaticObject(glm::vec2(0.0f), glm::vec2(0.0f))
@@ -29,7 +30,7 @@ void StaticObject::CalculateBoundingVolumes()
 
 	// circle bounds
 	circleBound.center = position;
-	circleBound.radius = glm::length(halfSize);
+	circleBound.radius = Math::SaveLength(halfSize);
 
 	// OOBB
 	oobb.center = position;
@@ -58,8 +59,8 @@ void StaticObject::CalculateBoundingVolumes()
 		oobb.corners[i].y = rotatedY + position.y;
 	}
 
-	oobb.axis[0] = glm::normalize(oobb.corners[1] + oobb.corners[0]);
-	oobb.axis[1] = glm::normalize(oobb.corners[3] + oobb.corners[0]);
+	oobb.axis[0] = Math::SaveNormalize(oobb.corners[1] + oobb.corners[0]);
+	oobb.axis[1] = Math::SaveNormalize(oobb.corners[3] + oobb.corners[0]);
 
 	oobb.CalculateTransform();
 

@@ -1,17 +1,18 @@
 #include "CollisionResolution.h"
 
 #include <glm/gtx/matrix_transform_2d.hpp>
+#include "Math.h"
 
 bool CircleCircleCollision(const CircleBound & circle1, const CircleBound & circle2, CollisionInfo& collisionInfo)
 {
-	float distance = glm::distance(circle1.center, circle2.center);
+	float distance = Math::SaveDistance(circle1.center, circle2.center);
 	
 	if(distance > (circle1.radius + circle2.radius))
 	{
 		return false;
 	}
 
-	collisionInfo.normal = glm::normalize(circle1.center - circle2.center);
+	collisionInfo.normal = Math::SaveNormalize(circle1.center - circle2.center);
 	collisionInfo.depth = (circle1.radius + circle2.radius) - distance;
 
 	return true;
@@ -24,7 +25,7 @@ bool CircleAABBCollision(const CircleBound & circle, const AABB & aabb, Collisio
 	distanceVector.y = glm::clamp(distanceVector.y, -aabb.halfSize.y, aabb.halfSize.y);
 
 	glm::vec2 closest = aabb.center + distanceVector;
-	float distance = glm::length(closest - circle.center);
+	float distance = Math::SaveLength(closest - circle.center);
 
 	// no collision
 	if(distance > circle.radius)
@@ -32,7 +33,7 @@ bool CircleAABBCollision(const CircleBound & circle, const AABB & aabb, Collisio
 		return false;
 	}
 
-	collisionInfo.normal = glm::normalize(closest - circle.center);
+	collisionInfo.normal = Math::SaveNormalize(closest - circle.center);
 	collisionInfo.depth = circle.radius - distance;
 
 	return true;
@@ -49,7 +50,7 @@ bool CircleOOBBCollision(const CircleBound& circle, const OOBB& oobb, CollisionI
 	distanceVector.y = glm::clamp(distanceVector.y, -oobb.halfSize.y, oobb.halfSize.y);
 
 	glm::vec2 closest = transOOBBCenter + distanceVector;
-	float distance = glm::length(closest - transCircleCenter);
+	float distance = Math::SaveLength(closest - transCircleCenter);
 
 	// no collision
 	if (distance > circle.radius)
@@ -57,7 +58,7 @@ bool CircleOOBBCollision(const CircleBound& circle, const OOBB& oobb, CollisionI
 		return false;
 	}
 
-	collisionInfo.normal = glm::vec2(oobb.transform * glm::vec3(glm::normalize(closest - transCircleCenter), 0.0f));
+	collisionInfo.normal = glm::vec2(oobb.transform * glm::vec3(Math::SaveNormalize(closest - transCircleCenter), 0.0f));
 	collisionInfo.depth = circle.radius - distance;
 
 	return true;

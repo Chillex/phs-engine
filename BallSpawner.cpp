@@ -6,6 +6,7 @@
 #include "Particle.h"
 #include "ParticleForceRegistry.h"
 #include "ParticleGravity.h"
+#include "FanForce.h"
 
 BallSpawner::BallSpawner(ParticleForceRegistry* forceRegistry)
 	: BallSpawner(glm::vec2(0.0f), 1.0f, forceRegistry)
@@ -67,6 +68,17 @@ void BallSpawner::Render(sf::RenderWindow& window)
 			window.draw(circleShape);
 		}
 	}
+}
+
+void BallSpawner::Reset()
+{
+	for (size_t i = 0; i < m_particles.size(); ++i)
+	{
+		m_forceRegistry->Remove(m_particles[i], Simulation::ParticleGravityGenerator);
+		m_forceRegistry->Remove(m_particles[i], Simulation::FanForceGenerator);
+		delete m_particles[i];
+	}
+	m_particles.clear();
 }
 
 std::vector<Particle*> BallSpawner::GetParticles() const

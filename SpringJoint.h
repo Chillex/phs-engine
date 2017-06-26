@@ -7,7 +7,7 @@ class Particle;
 class SpringJoint
 {
 public:
-	SpringJoint(Particle* p1, Particle* p2, float springConst, float restLength);
+	SpringJoint(Particle* p1, Particle* p2, float springConst, float restLength, float damping);
 	~SpringJoint();
 
 	void UpdateForce(float deltaTime);
@@ -18,5 +18,6 @@ public:
 protected:
 	float m_springConst;
 	float m_restLength;
+	float m_damping;
 };
 

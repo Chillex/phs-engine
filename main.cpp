@@ -53,6 +53,16 @@ int main()
 					simulation.ToggleDebugDraw();
 				}
 
+				if (event.key.code == sf::Keyboard::B)
+				{
+					simulation.ToggleBlizzards();
+				}
+
+				if (event.key.code == sf::Keyboard::R)
+				{
+					simulation.ResetBalls();
+				}
+
 				if (event.key.code == sf::Keyboard::Space)
 				{
 					simulation.SpawnBalls(1);

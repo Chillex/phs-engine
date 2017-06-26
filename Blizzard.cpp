@@ -39,13 +39,16 @@ Blizzard::~Blizzard()
 	}
 }
 
-void Blizzard::Update(float duration)
+void Blizzard::Update(float duration, bool spawnNew)
 {
-	m_timer += duration;
-	if(m_timer >= m_rate)
+	if(spawnNew)
 	{
-		CreateParticle();
-		m_timer = 0.0f;
+		m_timer += duration;
+		if (m_timer >= m_rate)
+		{
+			CreateParticle();
+			m_timer = 0.0f;
+		}
 	}
 
 	// update all particles
@@ -93,8 +96,8 @@ std::vector<Particle*> Blizzard::GetParticles(void) const
 
 void Blizzard::SetupStartingVelocities(void)
 {
-	float steps = 20.0f;
-	glm::vec2 v(400.0f, 0.0f);
+	float steps = 25.0f;
+	glm::vec2 v(150.0f, 0.0f);
 
 	for (int i = 0; i < steps; ++i)
 	{
@@ -110,7 +113,7 @@ void Blizzard::CreateParticle(void)
 	float mass = 1.0f;
 	float lifetime = 10.0f;
 	float size = 1.0f;
-	float bounciness = 0.5f;
+	float bounciness = 0.2f;
 
 	Particle* particle = new Particle(m_center, m_startingVelocities[m_currentVelocityIndex], acceleration, dampening, mass, lifetime, size, bounciness);
 	m_particles.push_back(particle);

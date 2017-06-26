@@ -123,11 +123,39 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AnchorSpring.cpp" />
+    <ClCompile Include="BallSpawner.cpp" />
+    <ClCompile Include="Blizzard.cpp" />
+    <ClCompile Include="CollisionResolution.cpp" />
+    <ClCompile Include="FanForce.cpp" />
     <ClCompile Include="FPSCounter.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="ParticleForceGenerator.cpp" />
+    <ClCompile Include="ParticleForceRegistry.cpp" />
+    <ClCompile Include="ParticleFriction.cpp" />
+    <ClCompile Include="ParticleGravity.cpp" />
+    <ClCompile Include="Simulation.cpp" />
+    <ClCompile Include="SpringJoint.cpp" />
+    <ClCompile Include="StaticObject.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnchorSpring.h" />
+    <ClInclude Include="BallSpawner.h" />
+    <ClInclude Include="Blizzard.h" />
+    <ClInclude Include="BoundingVolumes.h" />
+    <ClInclude Include="CollisionResolution.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="FanForce.h" />
     <ClInclude Include="FPSCounter.h" />
+    <ClInclude Include="Particle.h" />
+    <ClInclude Include="ParticleForceGenerator.h" />
+    <ClInclude Include="ParticleForceRegistry.h" />
+    <ClInclude Include="ParticleFriction.h" />
+    <ClInclude Include="ParticleGravity.h" />
+    <ClInclude Include="Simulation.h" />
+    <ClInclude Include="SpringJoint.h" />
+    <ClInclude Include="StaticObject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

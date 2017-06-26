@@ -1,10 +1,13 @@
 #include <SFML/Graphics.hpp>
-#include <glm/glm.hpp>
 
 #include "FPSCounter.h"
+#include "Simulation.h"
 
 int main()
 {
+	// seed rand
+	srand(time(nullptr));
+
 	sf::VideoMode vm(1280, 720);
 
 	sf::ContextSettings settings;
@@ -18,11 +21,15 @@ int main()
 	FPSCounter fpsCounter("Assets/Font/digital_counter_7.ttf");
 	sf::Color clearColor(0, 0, 0);
 
+	Simulation simulation;
+
+	float dt = 1.0f / 60.0f;
 	sf::Clock deltaClock;
-	sf::Time dt;
+	sf::Time frameTimer;
 	while (window.isOpen())
 	{
-		dt = deltaClock.restart();
+		frameTimer = deltaClock.restart();
+		float frameTime = frameTimer.asSeconds();
 		window.setView(gameView);
 
 		sf::Vector2i mousePosPixel = sf::Mouse::getPosition(window);
@@ -33,13 +40,40 @@ int main()
 		{
 			if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
 				window.close();
+
+			if (event.type == sf::Event::KeyPressed)
+			{
+				if (event.key.code == sf::Keyboard::F)
+				{
+					simulation.ToggleFan();
+				}
+
+				if (event.key.code == sf::Keyboard::D)
+				{
+					simulation.ToggleDebugDraw();
+				}
+
+				if (event.key.code == sf::Keyboard::Space)
+				{
+					simulation.SpawnBalls(1);
+				}
+			}
 		}
 
 		/* UPDATES */
-		fpsCounter.Update(dt);
+		fpsCounter.Update(frameTimer);
+
+		// semi-fixed timestep
+		while(frameTime > 0.0f)
+		{
+			float deltaTime = std::min(frameTime, dt);
+			simulation.Update(deltaTime);
+			frameTime -= deltaTime;
+		}
 
 		/* DRAW CALLS */
 		window.clear(clearColor);
+		simulation.Render(window);
 
 		window.setView(hudView);
 		fpsCounter.Draw(window);
